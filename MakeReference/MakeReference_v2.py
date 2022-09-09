@@ -3,8 +3,8 @@
 import os, sys, re
 import subprocess
 
-from MakeReference.src.HLAtoSequences import HLAtoSequences
-from MakeReference.src.encodeVariants import encodeVariants
+#from MakeReference.src.HLAtoSequences import HLAtoSequences
+#from MakeReference.src.encodeVariants import encodeVariants
 from MakeReference.src.encodeHLA import encodeHLA
 
 from MakeReference.src.ATtrick import ATtrick
@@ -64,31 +64,31 @@ def MakeReference_v2(_CHPED, _OUT, _hg, _dictionary_AA, _dictionary_SNPS, _varia
         sys.exit()
 
 
-
-    ### [3] Dictionary Files
-
-    _dictionary_AA_seq = _dictionary_AA + ".txt" # From now on, official extension of HLA sequence information dictionary is ".txt". (2018. 9. 25.)
-    _dictionary_AA_map = _dictionary_AA + ".map"
-
-    _dictionary_SNPS_seq = _dictionary_SNPS + ".txt"
-    _dictionary_SNPS_map = _dictionary_SNPS + ".map"
-
-
-    if not os.path.exists(_dictionary_AA_map):
-        print(std_ERROR_MAIN_PROCESS_NAME + "AA dictionary map file can't be found('{0}'). Please check '--dict-AA' argument again.\n".format(_dictionary_AA_map))
-        sys.exit()
-
-    if not os.path.exists(_dictionary_AA_seq):
-        print(std_ERROR_MAIN_PROCESS_NAME + "AA dictionary seq file can't be found('{0}'). Please check '--dict-AA' argument again.\n".format(_dictionary_AA_seq))
-        sys.exit()
-
-    if not os.path.exists(_dictionary_SNPS_map):
-        print(std_ERROR_MAIN_PROCESS_NAME + "SNPS dictionary map file can't be found('{0}'). Please check '--dict-SNPS' argument again.\n".format(_dictionary_SNPS_map))
-        sys.exit()
-
-    if not os.path.exists(_dictionary_SNPS_seq):
-        print(std_ERROR_MAIN_PROCESS_NAME + "SNPS dictionary seq file can't be found('{0}'). Please check '--dict-SNPS' argument again.\n".format(_dictionary_SNPS_seq))
-        sys.exit()
+# 
+# ### [3] Dictionary Files
+# 
+# _dictionary_AA_seq = _dictionary_AA + ".txt" # From now on, official extension of HLA sequence information dictionary is ".txt". (2018. 9. 25.)
+# _dictionary_AA_map = _dictionary_AA + ".map"
+# 
+# _dictionary_SNPS_seq = _dictionary_SNPS + ".txt"
+# _dictionary_SNPS_map = _dictionary_SNPS + ".map"
+# 
+# 
+# if not os.path.exists(_dictionary_AA_map):
+#   print(std_ERROR_MAIN_PROCESS_NAME + "AA dictionary map file can't be found('{0}'). Please check '--dict-AA' argument again.\n".format(_dictionary_AA_map))
+# sys.exit()
+# 
+# if not os.path.exists(_dictionary_AA_seq):
+#   print(std_ERROR_MAIN_PROCESS_NAME + "AA dictionary seq file can't be found('{0}'). Please check '--dict-AA' argument again.\n".format(_dictionary_AA_seq))
+# sys.exit()
+# 
+# if not os.path.exists(_dictionary_SNPS_map):
+#   print(std_ERROR_MAIN_PROCESS_NAME + "SNPS dictionary map file can't be found('{0}'). Please check '--dict-SNPS' argument again.\n".format(_dictionary_SNPS_map))
+# sys.exit()
+# 
+# if not os.path.exists(_dictionary_SNPS_seq):
+#   print(std_ERROR_MAIN_PROCESS_NAME + "SNPS dictionary seq file can't be found('{0}'). Please check '--dict-SNPS' argument again.\n".format(_dictionary_SNPS_seq))
+# sys.exit()
 
 
 
@@ -133,9 +133,9 @@ def MakeReference_v2(_CHPED, _OUT, _hg, _dictionary_AA, _dictionary_SNPS, _varia
 
 
     # Output prefix
-    AA_CODED = OUTPUT + '.AA.CODED'
+    #AA_CODED = OUTPUT + '.AA.CODED'
     HLA_CODED = OUTPUT + ".HLA"
-    SNPS_CODED = OUTPUT + '.SNPS.CODED'
+    #SNPS_CODED = OUTPUT + '.SNPS.CODED'
 
     plink = ' '.join([_p_plink, "--noweb", "--silent"])
     beagle = ' '.join(["java", "-Xmx{}".format(_java_heap_mem), "-Xss{}".format(_java_stack_mem), "-jar", _p_beagle])
@@ -147,9 +147,9 @@ def MakeReference_v2(_CHPED, _OUT, _hg, _dictionary_AA, _dictionary_SNPS, _varia
 
     ########## <Flags for Code Block> ##########
 
-    ENCODE_AA = 1
+    #ENCODE_AA = 1
     ENCODE_HLA = 1
-    ENCODE_SNPS = 1
+    #ENCODE_SNPS = 1
 
     EXTRACT_FOUNDERS = 1
     MERGE = 1
@@ -168,101 +168,101 @@ def MakeReference_v2(_CHPED, _OUT, _hg, _dictionary_AA, _dictionary_SNPS, _varia
     print(std_MAIN_PROCESS_NAME + "Making Reference Panel for \"{0}\"".format(OUTPUT))
     index = 1
 
-    if ENCODE_AA:
-
-        '''
-        echo "[$i] Generating amino acid sequences from HLA types.";  @ i++
-        ./HLAtoSequences.pl $HLA_DATA HLA_DICTIONARY_AA.txt AA > $OUTPUT.AA.ped
-        cp HLA_DICTIONARY_AA_hg19.map $OUTPUT.AA.map # hg19
-        # cp HLA_DICTIONARY_AA.map $OUTPUT.AA.map
-
-        echo "[$i] Encoding amino acids positions." ;  @ i++
-        ./encodeVariants.pl $OUTPUT.AA.ped $OUTPUT.AA.map $OUTPUT.AA.CODED
-
-        plink --file $OUTPUT.AA.CODED --missing-genotype 0 --make-bed --out $OUTPUT.AA.TMP
-        awk '{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}' $OUTPUT.AA.TMP.bim | grep -v INS | cut -f2 > to_remove
-        plink --bfile $OUTPUT.AA.TMP --exclude to_remove --make-bed --out $OUTPUT.AA.CODED
-
-        # rm $OUTPUT.AA.TMP*; rm to_remove
-        # rm $OUTPUT.AA.???
-        '''
-
-        print("[{}] Generating Amino acid(AA)sequences from HLA types.".format(index))
-
-        ### (1) Sequence File ( *.AA.{ped,map} ) ###
-        HLAtoSequences(HLA_DATA, _dictionary_AA_seq, "AA", _out=OUTPUT)
-        os.system(' '.join(["cp", _dictionary_AA_map, OUTPUT + '.AA.map']))
-
-        index += 1
-
-
-        print("[{}] Encoding Amino acids positions.".format(index))
-
-        ### (2) pre-CODED File ( *.AA.CODED.{ped,map},  *.AA.CODED.factors ) ###
-        encodeVariants(OUTPUT + '.AA.ped', OUTPUT + '.AA.map', OUTPUT + '.AA.CODED')  # previously "enCODED".
-
-        index += 1
-
-
-        ### (3) stuffs to remove ( *.AA.TMP.{bed,bim,fam}, to_remove ) ###
-        command = ' '.join(
-            [plink, "--file", OUTPUT + '.AA.CODED', "--missing-genotype 0", "--make-bed", "--out", OUTPUT + '.AA.TMP'])
-        # print(command)
-        os.system(command)
-
-        command = ' '.join(
-            ["awk", '\'{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}\'', OUTPUT + '.AA.TMP.bim', "|",
-             "cut -f2", ">",
-             os.path.join(INTERMEDIATE_PATH, "to_remove")])
-
-        """
-        In the previous framework which was created by Sherman Jia, The insertions were dealt as a marker "INS".
-        In the new version of Framework, marker label is "INDEL".
-        """
-
-        # print(command)
-        os.system(command)
-
-
-        ### (4) Final Encoded outputs ( *.AA.CODED.{bed,bim,fam,nosex,log} ) ###
-
-        command = ' '.join(
-            [plink, "--bfile", OUTPUT + '.AA.TMP',
-             "--exclude", os.path.join(INTERMEDIATE_PATH, "to_remove"),
-             "--make-bed",
-             "--out", OUTPUT + '.AA.CODED'])
-        # print(command)
-        os.system(command)
-
-
-        """
-        Generated outputs :
-            (1) Sequence File ( *.AA.{ped,map} )
-            (2) pre-CODED File ( *.AA.CODED.{ped,map}, *.AA.CODED.factors )
-            (3) stuffs to remove ( *.AA.TMP.{bed,bim,fam}, to_remove )
-            (4) Final Encoded outputs ( *.AA.CODED.{bed,bim,fam,nosex,log}
-            
-            
-        Final outputs :
-            - *.AA.CODED.{bed,bim,fam,factors,nosex,log}
-        
-        Outputs to remove :
-            - *.AA.{ped,map}
-            - *.AA.TMP.*
-            - to_remove
-            - *.AA.CODED.{ped,map}
-            
-        """
-
-        if not f_save_intermediates:
-
-            os.system("rm " + (OUTPUT + ".AA.ped"))
-            os.system("rm " + (OUTPUT + ".AA.map"))
-            os.system("rm " + (OUTPUT + ".AA.TMP.*"))
-            os.system("rm " + os.path.join(INTERMEDIATE_PATH, "to_remove"))
-            os.system("rm " + OUTPUT + ".AA.CODED.ped")
-            os.system("rm " + OUTPUT + ".AA.CODED.map")
-            os.system("rm " + OUTPUT + ".AA.CODED.factors")
+    # if ENCODE_AA:
+#     
+#     '''
+#         echo "[$i] Generating amino acid sequences from HLA types.";  @ i++
+#         ./HLAtoSequences.pl $HLA_DATA HLA_DICTIONARY_AA.txt AA > $OUTPUT.AA.ped
+#         cp HLA_DICTIONARY_AA_hg19.map $OUTPUT.AA.map # hg19
+#         # cp HLA_DICTIONARY_AA.map $OUTPUT.AA.map
+# 
+#         echo "[$i] Encoding amino acids positions." ;  @ i++
+#         ./encodeVariants.pl $OUTPUT.AA.ped $OUTPUT.AA.map $OUTPUT.AA.CODED
+# 
+#         plink --file $OUTPUT.AA.CODED --missing-genotype 0 --make-bed --out $OUTPUT.AA.TMP
+#         awk '{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}' $OUTPUT.AA.TMP.bim | grep -v INS | cut -f2 > to_remove
+#         plink --bfile $OUTPUT.AA.TMP --exclude to_remove --make-bed --out $OUTPUT.AA.CODED
+# 
+#         # rm $OUTPUT.AA.TMP*; rm to_remove
+#         # rm $OUTPUT.AA.???
+#         '''
+# 
+# print("[{}] Generating Amino acid(AA)sequences from HLA types.".format(index))
+# 
+# ### (1) Sequence File ( *.AA.{ped,map} ) ###
+# HLAtoSequences(HLA_DATA, _dictionary_AA_seq, "AA", _out=OUTPUT)
+# os.system(' '.join(["cp", _dictionary_AA_map, OUTPUT + '.AA.map']))
+# 
+# index += 1
+# 
+# 
+# print("[{}] Encoding Amino acids positions.".format(index))
+# 
+# ### (2) pre-CODED File ( *.AA.CODED.{ped,map},  *.AA.CODED.factors ) ###
+# encodeVariants(OUTPUT + '.AA.ped', OUTPUT + '.AA.map', OUTPUT + '.AA.CODED')  # previously "enCODED".
+# 
+# index += 1
+# 
+# 
+# ### (3) stuffs to remove ( *.AA.TMP.{bed,bim,fam}, to_remove ) ###
+# command = ' '.join(
+#   [plink, "--file", OUTPUT + '.AA.CODED', "--missing-genotype 0", "--make-bed", "--out", OUTPUT + '.AA.TMP'])
+# # print(command)
+# os.system(command)
+# 
+# command = ' '.join(
+#   ["awk", '\'{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}\'', OUTPUT + '.AA.TMP.bim', "|",
+#    "cut -f2", ">",
+#    os.path.join(INTERMEDIATE_PATH, "to_remove")])
+# 
+# """
+#         In the previous framework which was created by Sherman Jia, The insertions were dealt as a marker "INS".
+#         In the new version of Framework, marker label is "INDEL".
+#         """
+# 
+# # print(command)
+# os.system(command)
+# 
+# 
+# ### (4) Final Encoded outputs ( *.AA.CODED.{bed,bim,fam,nosex,log} ) ###
+# 
+# command = ' '.join(
+#   [plink, "--bfile", OUTPUT + '.AA.TMP',
+#    "--exclude", os.path.join(INTERMEDIATE_PATH, "to_remove"),
+#    "--make-bed",
+#    "--out", OUTPUT + '.AA.CODED'])
+# # print(command)
+# os.system(command)
+# 
+# 
+# """
+#         Generated outputs :
+#             (1) Sequence File ( *.AA.{ped,map} )
+#             (2) pre-CODED File ( *.AA.CODED.{ped,map}, *.AA.CODED.factors )
+#             (3) stuffs to remove ( *.AA.TMP.{bed,bim,fam}, to_remove )
+#             (4) Final Encoded outputs ( *.AA.CODED.{bed,bim,fam,nosex,log}
+#             
+#             
+#         Final outputs :
+#             - *.AA.CODED.{bed,bim,fam,factors,nosex,log}
+#         
+#         Outputs to remove :
+#             - *.AA.{ped,map}
+#             - *.AA.TMP.*
+#             - to_remove
+#             - *.AA.CODED.{ped,map}
+#             
+#         """
+# 
+# if not f_save_intermediates:
+#   
+#   os.system("rm " + (OUTPUT + ".AA.ped"))
+# os.system("rm " + (OUTPUT + ".AA.map"))
+# os.system("rm " + (OUTPUT + ".AA.TMP.*"))
+# os.system("rm " + os.path.join(INTERMEDIATE_PATH, "to_remove"))
+# os.system("rm " + OUTPUT + ".AA.CODED.ped")
+# os.system("rm " + OUTPUT + ".AA.CODED.map")
+# os.system("rm " + OUTPUT + ".AA.CODED.factors")
 
 
 
@@ -300,81 +300,81 @@ def MakeReference_v2(_CHPED, _OUT, _hg, _dictionary_AA, _dictionary_SNPS, _varia
 
 
 
-    if ENCODE_SNPS:
-
-        print("[{}] Generating DNA(SNPS) sequences from HLA types.".format(index))
-
-        ### (1) Sequence File ( *.SNPS.{ped,map} )
-        HLAtoSequences(HLA_DATA, _dictionary_SNPS_seq, "SNPS", OUTPUT)
-
-        command = ' '.join(["cp", _dictionary_SNPS_map, OUTPUT + '.SNPS.map'])
-        # print(command)
-        os.system(command)
-
-        index += 1
-
-
-        print("[{}] Encoding SNP positions.".format(index))
-
-        ### (2) pre-CODED File ( *.SNPS.CODED.{ped,map} )
-        encodeVariants(OUTPUT + '.SNPS.ped', OUTPUT + '.SNPS.map', OUTPUT + '.SNPS.CODED')
-
-        index += 1
-
-
-        ### (3) Stuffs to remove ( *.SNPS.TMP.{bed,bim,fam}, to_remove )
-        command = ' '.join([plink, "--file", OUTPUT + '.SNPS.CODED', "--missing-genotype 0", "--make-bed", "--out",
-                            OUTPUT + '.SNPS.TMP'])
-        # print(command)
-        os.system(command)
-
-
-        command = ' '.join(
-            ["awk", '\'{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}\'', OUTPUT + '.SNPS.TMP.bim', "|", "cut -f2", ">",
-             os.path.join(INTERMEDIATE_PATH, "to_remove")])
-        # print(command)
-        os.system(command)
-
-
-        ### (4) Final Encoded outputs ( *.SNPS.CODED.{bed,bim,fam,nosex,log} )
-        command = ' '.join(
-            [plink, "--bfile", OUTPUT + '.SNPS.TMP',
-             "--exclude", os.path.join(INTERMEDIATE_PATH, "to_remove"),
-             "--make-bed",
-             "--out", OUTPUT + '.SNPS.CODED'])
-        # print(command)
-        os.system(command)
-
-
-        """
-        Generated outputs :
-            (1) Sequence File ( *.SNPS.{ped,map} )
-            (2) pre-CODED File ( *.SNPS.CODED.{ped,map}, *.SNPS.CODED.factors )
-            (3) stuffs to remove ( *.SNPS.TMP.{bed,bim,fam}, to_remove )
-            (4) Final Encoded outputs ( *.SNPS.CODED.{bed,bim,fam,nosex,log}
-            
-                      
-        Final outputs :
-            - *.SNPS.CODED.{bed,bim,fam,factors,nosex,log}
-        
-        Outputs to remove :
-            - *.SNPS.{ped,map}
-            - *.SNPS.TMP.*
-            - to_remove
-            - *.SNPS.CODED.{ped,map}
-                    
-        """
-
-        if not f_save_intermediates:
-
-            os.system("rm " + (OUTPUT + ".SNPS.ped"))
-            os.system("rm " + (OUTPUT + ".SNPS.map"))
-            os.system("rm " + (OUTPUT + ".SNPS.TMP.*"))
-            os.system("rm " + os.path.join(INTERMEDIATE_PATH, "to_remove"))
-            os.system("rm " + (OUTPUT + ".SNPS.CODED.ped"))
-            os.system("rm " + (OUTPUT + ".SNPS.CODED.map"))
-            os.system("rm " + (OUTPUT + ".SNPS.CODED.factors"))
-
+ # if ENCODE_SNPS:
+#     
+#     print("[{}] Generating DNA(SNPS) sequences from HLA types.".format(index))
+# 
+# ### (1) Sequence File ( *.SNPS.{ped,map} )
+# HLAtoSequences(HLA_DATA, _dictionary_SNPS_seq, "SNPS", OUTPUT)
+# 
+# command = ' '.join(["cp", _dictionary_SNPS_map, OUTPUT + '.SNPS.map'])
+# # print(command)
+# os.system(command)
+# 
+# index += 1
+# 
+# 
+# print("[{}] Encoding SNP positions.".format(index))
+# 
+# ### (2) pre-CODED File ( *.SNPS.CODED.{ped,map} )
+# encodeVariants(OUTPUT + '.SNPS.ped', OUTPUT + '.SNPS.map', OUTPUT + '.SNPS.CODED')
+# 
+# index += 1
+# 
+# 
+# ### (3) Stuffs to remove ( *.SNPS.TMP.{bed,bim,fam}, to_remove )
+# command = ' '.join([plink, "--file", OUTPUT + '.SNPS.CODED', "--missing-genotype 0", "--make-bed", "--out",
+#                     OUTPUT + '.SNPS.TMP'])
+# # print(command)
+# os.system(command)
+# 
+# 
+# command = ' '.join(
+#   ["awk", '\'{if ($5 == "0" || $5 == "x" || $6 == "x"){print $2}}\'', OUTPUT + '.SNPS.TMP.bim', "|", "cut -f2", ">",
+#    os.path.join(INTERMEDIATE_PATH, "to_remove")])
+# # print(command)
+# os.system(command)
+# 
+# 
+# ### (4) Final Encoded outputs ( *.SNPS.CODED.{bed,bim,fam,nosex,log} )
+# command = ' '.join(
+#   [plink, "--bfile", OUTPUT + '.SNPS.TMP',
+#    "--exclude", os.path.join(INTERMEDIATE_PATH, "to_remove"),
+#    "--make-bed",
+#    "--out", OUTPUT + '.SNPS.CODED'])
+# # print(command)
+# os.system(command)
+# 
+# 
+# """
+#         Generated outputs :
+#             (1) Sequence File ( *.SNPS.{ped,map} )
+#             (2) pre-CODED File ( *.SNPS.CODED.{ped,map}, *.SNPS.CODED.factors )
+#             (3) stuffs to remove ( *.SNPS.TMP.{bed,bim,fam}, to_remove )
+#             (4) Final Encoded outputs ( *.SNPS.CODED.{bed,bim,fam,nosex,log}
+#             
+#                       
+#         Final outputs :
+#             - *.SNPS.CODED.{bed,bim,fam,factors,nosex,log}
+#         
+#         Outputs to remove :
+#             - *.SNPS.{ped,map}
+#             - *.SNPS.TMP.*
+#             - to_remove
+#             - *.SNPS.CODED.{ped,map}
+#                     
+#         """
+# 
+# if not f_save_intermediates:
+#   
+#   os.system("rm " + (OUTPUT + ".SNPS.ped"))
+# os.system("rm " + (OUTPUT + ".SNPS.map"))
+# os.system("rm " + (OUTPUT + ".SNPS.TMP.*"))
+# os.system("rm " + os.path.join(INTERMEDIATE_PATH, "to_remove"))
+# os.system("rm " + (OUTPUT + ".SNPS.CODED.ped"))
+# os.system("rm " + (OUTPUT + ".SNPS.CODED.map"))
+# os.system("rm " + (OUTPUT + ".SNPS.CODED.factors"))
+# 
 
 
 
