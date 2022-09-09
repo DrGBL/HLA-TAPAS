@@ -11,23 +11,21 @@ std_MAIN_PROCESS_NAME = "\n[%s]: " % (os.path.basename(__file__))
 std_ERROR_MAIN_PROCESS_NAME = "\n[%s::ERROR]: " % (os.path.basename(__file__))
 std_WARNING_MAIN_PROCESS_NAME = "\n[%s::WARNING]: " % (os.path.basename(__file__))
 
-HLA_names = ["A", "B", "C", "DPA1", "DPB1", "DQA1", "DQB1", "DRB1"]
-HLA_names2 = [0, 2, 1, 7, 5, 6, 3, 4]  # Read in the order of `HLA_names`, Write in the order of `HLA_names2` (to be compatible with old version of Dictionary).
+HLA_names = ["A", "B", "C", "E", "F", "G", "DMA", "DMB", "DOA", "DOB", "DPA1", "DPB1", "DQA1", "DQB1", "DRA", "DRB1", "DRB3", "DRB4", "DRB5"]
 
-# (2018. 9. 25.) Replaced by lift-over values.
-genepos_hg = {"18": {"A": 30018226, "C": 31344505, "B": 31429628, "DRB1": 32654525, "DQA1": 32713161, "DQB1": 32735219,
-                     "DPA1": 33140324, "DPB1": 33151681},
-              "19": {"A": 29910247, "C": 31236526, "B": 31321649, "DRB1": 32546547, "DQA1": 32605183, "DQB1": 32627241,
+# (2022.) Replaced by lift-over values.
+# WILL NOT USE HG19 AT ALL!!!!!!!!!!
+genepos_hg = {"19": {"A": 29910247, "C": 31236526, "B": 31321649, "DRB1": 32546547, "DQA1": 32605183, "DQB1": 32627241,
                      "DPA1": 33032346, "DPB1": 33043703},
-              "38": {"A": 29942470, "C": 31268749, "B": 31353872, "DRB1": 32578770, "DQA1": 32637406, "DQB1": 32659464,
-                     "DPA1": 33064569, "DPB1": 33075926}}
+              "38": {"A": 29941260, "B": 31353872, "C": 31268749, "E": 30489509, "F": 29722775, "G": 29826967,
+                     "DMA": 32948613, "DMB": 32934629, "DOA": 33004182, "DOB": 32812763, 
+                     "DPA1": 33064569, "DPB1": 33075990, 
+                     "DQA1": 32628179, "DQB1": 32659467,
+                     "DRA": 32439878,
+                     "DRB1": 32577902, "DRB3": 32449765, "DRB4": 32542598, "DRB5": 32517353}}
 
-genepos_hg_previous = {"18": {"A": 30019970, "C": 31346171, "B": 31431272, "DRB1": 32660042, "DQA1": 32716284, "DQB1": 32739039,
-                              "DPA1": 33145064, "DPB1": 33157346}}
 
-
-
-def encodeHLA(_CHPED, _OUTPUT, _hg="18", __asSmallLetter=True, __addDummyMarker=False, __previous_version=False):
+def encodeHLA(_CHPED, _OUTPUT, _hg="18", __asSmallLetter=True, __addDummyMarker=False):
 
 
 
@@ -41,115 +39,18 @@ def encodeHLA(_CHPED, _OUTPUT, _hg="18", __asSmallLetter=True, __addDummyMarker=
 
 
 
-    if __previous_version:
+else:
+    ### Acquiring `HLA_allele_sets`.
 
-        ### Acquiring `HLA_allele_sets`.
+    HLA_allele_sets = {HLA_names[i]: [] for i in range(0, len(HLA_names))}
 
-        HLA_allele_sets = {HLA_names[i]: [] for i in range(0, len(HLA_names))}
+    p_1field = re.compile(r'\w+\*\d{2,3}')
 
-        p = re.compile(r'\w+:(\d{2}):(\d{2})[A-Z]?$')
+    with open(_CHPED, 'r') as f_chped:
 
-        with open(_CHPED, 'r') as f_chped:
+        count = 0
 
-            count = 0
-
-            for l in f_chped:
-
-                """
-                l[:6] := ("FID", "IID", "PID", "MID", "Sex", "Phe")
-                l[6:8] := HLA-A
-                l[8:10] := HLA-B
-                ...
-                l[20:22] := HLA-DRB1
-                """
-
-                t_line = re.split(r'\s+', l.rstrip('\n'))
-                # print(t_line)
-
-                for i in range(0, len(HLA_names)):
-
-                    idx1 = 2*i + 6
-                    idx2 = idx1 + 1
-
-                    al1 = t_line[idx1]
-                    al2 = t_line[idx2]
-
-
-                    if al1 != "0" and p.match(al1):
-
-                        t_al1 = p.findall(al1).pop()
-
-                        al1_4digit = ''.join(t_al1)
-                        al1_2digit = t_al1[0]
-
-                        if al1_4digit not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al1_4digit)
-                        if al1_2digit not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al1_2digit)
-
-
-                    if al2 != "0" and p.match(al2):
-
-                        t_al2 = p.findall(al2).pop()
-
-                        al2_4digit = ''.join(t_al2)
-                        al2_2digit = t_al2[0]
-
-                        if al2_4digit not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al2_4digit)
-                        if al2_2digit not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al2_2digit)
-
-
-                count += 1
-                # if count > 5 : break
-
-
-        for i in range(0, len(HLA_names)):
-            HLA_allele_sets[HLA_names[i]].sort()
-
-
-        # # Result checking
-        # print("\nHLA alleles.")
-        # for k, v in HLA_allele_sets.items():
-        #     print("{}: {}".format(k, v))
-
-
-        ### Making a new *.HLA.map file.
-
-        map_LABELS = ['_'.join(["HLA", HLA_names[i], HLA_allele_sets[HLA_names[i]][j]]) for i in HLA_names2 for j in range(0, len(HLA_allele_sets[HLA_names[i]]))]
-        # print(map_LABELS)
-
-        map_POS = [str(genepos_hg_previous[_hg][HLA_names[i]]) for i in HLA_names2 for z in range(0, len(HLA_allele_sets[HLA_names[i]]))]
-        # print(map_POS)
-
-        with open(_OUTPUT + ".map", 'w') as f_HLA_map:
-            f_HLA_map.writelines(('\t'.join(["6", map_LABELS[i], "0", map_POS[i]]) + "\n" for i in range(0, len(map_LABELS))))
-
-            if __addDummyMarker:
-                f_HLA_map.write('\t'.join(["6", "dummy_marker", "0", "33999999"]) + "\n")
-
-
-
-        ### Making a new *.HLA.ped file.
-
-        with open(_OUTPUT + ".ped", 'w') as f_HLA_ped:
-            f_HLA_ped.writelines(
-                MakeHLAPed(_CHPED, HLA_allele_sets, __asSmallLetter=__asSmallLetter, __addDummyMarker=__addDummyMarker,
-                           __previous_version=__previous_version))
-
-    else:
-        ### Acquiring `HLA_allele_sets`.
-
-        HLA_allele_sets = {HLA_names[i]: [] for i in range(0, len(HLA_names))}
-
-        p_1field = re.compile(r'\w+\*\d{2,3}')
-
-        with open(_CHPED, 'r') as f_chped:
-
-            count = 0
-
-            for l in f_chped:
+        for l in f_chped:
 
                 """
                 l[:6] := ("FID", "IID", "PID", "MID", "Sex", "Phe")
@@ -159,56 +60,56 @@ def encodeHLA(_CHPED, _OUTPUT, _hg="18", __asSmallLetter=True, __addDummyMarker=
                 l[20:22] := HLA-DRB1
                 """
 
-                t_line = re.split(r'\s+', l.rstrip('\n'))
+            t_line = re.split(r'\s+', l.rstrip('\n'))
                 # print(t_line)
 
-                for i in range(0, len(HLA_names)):
+            for i in range(0, len(HLA_names)):
 
-                    idx1 = 2*i + 6
-                    idx2 = idx1 + 1
+                idx1 = 2*i + 6
+                idx2 = idx1 + 1
 
-                    al1 = t_line[idx1]
-                    al2 = t_line[idx2]
+                al1 = t_line[idx1]
+                al2 = t_line[idx2]
 
 
                     # Allele 1
-                    if al1 != "0":
+                if al1 != "0":
 
-                        if al1 not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al1)
+                    if al1 not in HLA_allele_sets[HLA_names[i]]:
+                        HLA_allele_sets[HLA_names[i]].append(al1)
 
-                        m = p_1field.match(al1)
+                    m = p_1field.match(al1)
 
-                        if m:
+                    if m:
 
-                            al1_1field = m.group()
+                        al1_1field = m.group()
 
-                            if al1_1field not in HLA_allele_sets[HLA_names[i]]:
-                                HLA_allele_sets[HLA_names[i]].append(al1_1field)
+                        if al1_1field not in HLA_allele_sets[HLA_names[i]]:
+                            HLA_allele_sets[HLA_names[i]].append(al1_1field)
 
 
                     # Allele 2
-                    if al2 != "0":
+                if al2 != "0":
 
-                        if al2 not in HLA_allele_sets[HLA_names[i]]:
-                            HLA_allele_sets[HLA_names[i]].append(al2)
+                    if al2 not in HLA_allele_sets[HLA_names[i]]:
+                        HLA_allele_sets[HLA_names[i]].append(al2)
 
-                        m = p_1field.match(al2)
+                    m = p_1field.match(al2)
 
-                        if m:
+                    if m:
 
-                            al2_1field = m.group()
+                        al2_1field = m.group()
 
-                            if al2_1field not in HLA_allele_sets[HLA_names[i]]:
-                                HLA_allele_sets[HLA_names[i]].append(al2_1field)
+                        if al2_1field not in HLA_allele_sets[HLA_names[i]]:
+                            HLA_allele_sets[HLA_names[i]].append(al2_1field)
 
 
-                count += 1
+            count += 1
                 # if count > 5 : break
 
 
-        for i in range(0, len(HLA_names)):
-            HLA_allele_sets[HLA_names[i]].sort()
+    for i in range(0, len(HLA_names)):
+        HLA_allele_sets[HLA_names[i]].sort()
 
 
         # # Result checking
@@ -220,30 +121,30 @@ def encodeHLA(_CHPED, _OUTPUT, _hg="18", __asSmallLetter=True, __addDummyMarker=
 
         ### Making a new *.HLA.map file.
 
-        map_LABELS = ['_'.join(["HLA", HLA_allele_sets[HLA_names[i]][j]]) for i in range(0, len(HLA_names)) for j in range(0, len(HLA_allele_sets[HLA_names[i]]))]
+    map_LABELS = ['_'.join(["HLA", HLA_allele_sets[HLA_names[i]][j]]) for i in range(0, len(HLA_names)) for j in range(0, len(HLA_allele_sets[HLA_names[i]]))]
         # print(map_LABELS)
 
-        map_POS = [str(genepos_hg[_hg][HLA_names[i]]) for i in range(0, len(HLA_names)) for z in range(0, len(HLA_allele_sets[HLA_names[i]]))]
+    map_POS = [str(genepos_hg[_hg][HLA_names[i]]) for i in range(0, len(HLA_names)) for z in range(0, len(HLA_allele_sets[HLA_names[i]]))]
         # print(map_POS)
 
-        with open(_OUTPUT + ".map", 'w') as f_HLA_map:
-            f_HLA_map.writelines(('\t'.join(["6", map_LABELS[i], "0", map_POS[i]]) + "\n" for i in range(0, len(map_LABELS))))
+    with open(_OUTPUT + ".map", 'w') as f_HLA_map:
+        f_HLA_map.writelines(('\t'.join(["6", map_LABELS[i], "0", map_POS[i]]) + "\n" for i in range(0, len(map_LABELS))))
 
-            if __addDummyMarker:
-                f_HLA_map.write('\t'.join(["6", "dummy_marker", "0", "33999999"]) + "\n")
+        if __addDummyMarker:
+            f_HLA_map.write('\t'.join(["6", "dummy_marker", "0", "33999999"]) + "\n")
 
 
 
         ### Making a new *.HLA.ped file.
 
-        with open(_OUTPUT + ".ped", 'w') as f_HLA_ped:
-            f_HLA_ped.writelines(
-                MakeHLAPed(_CHPED, HLA_allele_sets, __asSmallLetter=__asSmallLetter, __addDummyMarker=__addDummyMarker,
-                           __previous_version=__previous_version))
+    with open(_OUTPUT + ".ped", 'w') as f_HLA_ped:
+        f_HLA_ped.writelines(
+            MakeHLAPed(_CHPED, HLA_allele_sets, __asSmallLetter=__asSmallLetter, __addDummyMarker=__addDummyMarker,
+                       __previous_version=__previous_version))
 
 
 
-    return [_OUTPUT+".ped", _OUTPUT+".map"]
+return [_OUTPUT+".ped", _OUTPUT+".map"]
 
 
 
@@ -368,7 +269,7 @@ def MakeHLAPed(_CHPED, _HLA_allele_sets, __asSmallLetter=False, __addDummyMarker
             t_line[20:22] := HLA-DRB1
             """
 
-            t_iterator = range(0, len(HLA_names)) if not __previous_version else HLA_names2
+            t_iterator = range(0, len(HLA_names)) if not __previous_version else HLA_names
 
             __ped_info__ = '\t'.join(t_line[:6])
             __genomic_info__ = '\t'.join([
